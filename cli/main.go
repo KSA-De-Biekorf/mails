@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -26,6 +27,21 @@ func main() {
 		printLightRed("Running in GTU mode")
 	} // unspecified == PRD
 
+	// Initialize logging
+	logFile, err := os.OpenFile("mails-util-log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
+	}
+	if os.Getenv("LOG_TO_STDOUT") == "1" {
+		mw := io.MultiWriter(os.Stdout, logFile)
+		log.SetOutput(mw)
+	} else {
+		log.SetOutput(logFile)
+	}
+
+	log.Println("=== Invoking mails ===")
+
+	// CLI
 	app := &cli.App{
 		Name:  "mails",
 		Usage: "Mailinglijsten utility",

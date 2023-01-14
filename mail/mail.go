@@ -64,7 +64,7 @@ func CreateMailRequest(
 	// TODO: SetSubstitution, SetCustomArg
 	// TODO: attachements
 
-	content := mail.NewContent("text/html", cfg.HTMLContent)
+	content := mail.NewContent(cfg.ContentType, cfg.Content)
 	m.AddContent(content)
 
 	// mailSettings := mail.NewMailSettings()
