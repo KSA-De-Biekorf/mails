@@ -28,7 +28,11 @@ func main() {
 	} // unspecified == PRD
 
 	// Initialize logging
-	logFile, err := os.OpenFile("mails-util-log.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	logFileLoc := os.Getenv("LOGFILE")
+	if logFileLoc == "" {
+		logFileLoc = "mails-util-log.txt"
+	}
+	logFile, err := os.OpenFile(logFileLoc, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -86,6 +90,14 @@ func main() {
 					// fmt.Printf("message: %s\n", ctx.String("message"))
 					// fmt.Printf("from: %s\n", ctx.String("from"))
 					// fmt.Printf("reply-to: %s\n", ctx.String("reply-to"))
+					log.Println("### SEND ###")
+					log.Printf("From: %v\n", ctx.String("from"))
+					log.Printf("ReplyTo: %v\n", ctx.String("reply-to"))
+					log.Printf("Ban: %v\n", ctx.String("ban"))
+					log.Printf("Subject: %v\n", ctx.String("subject"))
+					log.Printf("Message: %v\n", ctx.String("message"))
+					log.Printf("ContentType: %v\n", ctx.String("content-type"))
+					log.Println("############")
 
 					return sendEmail(
 						ctx.String("from"),
