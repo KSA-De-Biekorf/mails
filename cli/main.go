@@ -57,6 +57,12 @@ func main() {
 						Aliases: []string{"m"},
 						Usage:   "Het email bericht. In HTML vorm",
 					},
+					&cli.StringFlag{
+						Name:    "content-type",
+						Aliases: []string{"t"},
+						Usage:   "Content type van het bericht (i.e. \"text/html\" of \"text/plain\")",
+						Value:   "text/html",
+					},
 				},
 				Action: func(ctx *cli.Context) error {
 					// fmt.Printf("ban: %d\n", ctx.IntSlice("ban"))
@@ -71,6 +77,7 @@ func main() {
 						ctx.IntSlice("ban"),
 						ctx.String("subject"),
 						ctx.String("message"),
+						ctx.String("content-type"),
 					)
 				},
 			},

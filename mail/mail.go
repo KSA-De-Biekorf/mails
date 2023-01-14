@@ -34,7 +34,8 @@ type MailConfig struct {
 	ReplyTo     *Email
 	Subject     string
 	Tos         []db.EmailEntry
-	HTMLContent string
+	Content     string
+	ContentType string
 }
 
 // Example: https://github.com/sendgrid/sendgrid-go/blob/bdbdc219ff7f51bd47087383c45002d43a877f07/examples/helpers/mail/example.go#L32

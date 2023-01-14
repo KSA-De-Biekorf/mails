@@ -14,7 +14,8 @@ func sendEmail(
 	replyTo string,
 	bannen []int,
 	subject,
-	message string,
+	message,
+	contentType string,
 ) error {
 	var err error
 	var emails []db.EmailEntry
@@ -50,8 +51,8 @@ func sendEmail(
 	cfg := mail.MailConfig{
 		// From:        mail.ParseEmail(from),
 		// ReplyTo:     mail.ParseEmail(replyTo),
-		Subject:     subject,
-		HTMLContent: message,
+		Subject: subject,
+		Content: message,
 	}
 	if replyTo != "" {
 		cfg.ReplyTo = mail.ParseEmail(replyTo)
@@ -67,6 +68,12 @@ func sendEmail(
 			name = cfg.ReplyTo.Name
 		}
 		cfg.From = mail.NewEmail(name, "no_reply@ksadebiekorf.be")
+	}
+
+	if contentType == "" {
+		cfg.ContentType = "text/html"
+	} else {
+		cfg.ContentType = contentType
 	}
 
 	if env.IsPRD() || env.IsGTU() {
