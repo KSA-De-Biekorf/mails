@@ -1,5 +1,17 @@
 # Mailinglijsten utility
 
+## Running
+
+```bash
+go run ./cli
+```
+
+## Bulding
+
+```bash
+go build -o build/mails ./cli
+```
+
 ## Example
 
 ```bash
