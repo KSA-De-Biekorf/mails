@@ -9,7 +9,7 @@ go run ./cli
 ## Bulding
 
 ```bash
-go build -o build/mails ./cli
+GOOS=linux go build -o build/mails -ldflags="-s -w" ./cli
 ```
 
 ## Example
