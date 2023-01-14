@@ -12,6 +12,12 @@ go run ./cli
 GOOS=linux go build -o build/mails -ldflags="-s -w" ./cli
 ```
 
+or
+
+```bash
+make
+```
+
 ## Example
 
 ```bash

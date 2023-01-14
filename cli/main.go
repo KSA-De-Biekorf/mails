@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	cli "github.com/urfave/cli/v2"
+	"ksadebiekorf.be/mailing/email_parser"
 	"ksadebiekorf.be/mailing/env"
 )
 
@@ -108,11 +110,46 @@ func main() {
 						ctx.String("content-type"),
 					)
 				},
+			}, {
+				Name: "resend",
+				Flags: []cli.Flag{
+					&cli.IntSliceFlag{
+						Name:    "ban",
+						Aliases: []string{"b"},
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					log.Println("### RESEND ###")
+					log.Printf("Ban: %v\n", ctx.IntSlice("ban"))
+					log.Println("##############")
+
+					email, err := email_parser.EmailFromPipe()
+					if err != nil {
+						return err
+					}
+
+					log.Printf("ParsedEmail: %#v\n", *email)
+
+					if email.IsSpam {
+						// TODO: whitelist
+						return errors.New("The email was classified as spam and the email address is not white listed")
+					}
+
+					return sendEmail(
+						"",
+						email.From,
+						ctx.IntSlice("ban"),
+						email.Subject,
+						email.Message,
+						email.ContentType,
+					)
+				},
 			},
 		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "An error occured while sending the email:\n%v\n", err)
+		log.Fatal("An error occured: ", err)
 	}
 }

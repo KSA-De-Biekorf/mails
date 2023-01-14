@@ -29,6 +29,10 @@ func sendEmail(
 				Email:     "john.doe@ksadebiekorf.be",
 				FirstName: "John",
 				LastName:  "Doe",
+			}, {
+				Email:     "jonas.vbs4@gmail.com",
+				FirstName: "Jonas",
+				LastName:  "Everaert",
 			},
 		}
 	} else {

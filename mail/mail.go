@@ -30,11 +30,13 @@ func ParseEmail(e string) *Email {
 }
 
 type MailConfig struct {
-	From        *Email
-	ReplyTo     *Email
-	Subject     string
-	Tos         []db.EmailEntry
-	Content     string
+	From    *Email
+	ReplyTo *Email
+	Subject string
+	// All emails that need to be mailed to
+	Tos     []db.EmailEntry
+	Content string
+	// text/html or text/plain
 	ContentType string
 }
 
