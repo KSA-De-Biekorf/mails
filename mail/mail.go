@@ -19,6 +19,9 @@ func NewEmail(name, address string) *Email {
 
 // Parse email in the form of "name <email>"
 func ParseEmail(e string) *Email {
+	if len(e) == 0 {
+		return nil
+	}
 	split := strings.Split(e, "<")
 	name := strings.Trim(split[0], " ")
 	email := strings.Trim(split[1], " \n>")

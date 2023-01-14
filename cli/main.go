@@ -1,15 +1,31 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	cli "github.com/urfave/cli/v2"
+	"ksadebiekorf.be/mailing/env"
 )
+
+func printLightRed(msg string) {
+	if strings.Contains(os.Getenv("TERM"), "256color") {
+		fmt.Printf("\u001b[38;5;202m%s\u001b[0m\n", msg)
+	} else {
+		fmt.Printf("\u001b[91m%s\u001b[0m\n", msg)
+	}
+}
 
 // Mailing utility `mails`
 func main() {
+	if env.IsTST() {
+		printLightRed("Running in test mode")
+	} else if env.IsGTU() {
+		printLightRed("Running in GTU mode")
+	} // unspecified == PRD
+
 	app := &cli.App{
 		Name:  "mails",
 		Usage: "Mailinglijsten utility",
