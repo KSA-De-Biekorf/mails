@@ -106,12 +106,13 @@ func main() {
 						ctx.String("reply-to"),
 						ctx.IntSlice("ban"),
 						ctx.String("subject"),
-						ctx.String("message"),
+						[]email_parser.SubMessage{{ContentType: ctx.String("content-type"), Message: ctx.String("message")}},
 						ctx.String("content-type"),
 					)
 				},
 			}, {
-				Name: "resend",
+				Name:  "resend",
+				Usage: "Resend an email piped to the program from stdin.",
 				Flags: []cli.Flag{
 					&cli.IntSliceFlag{
 						Name:    "ban",
@@ -140,7 +141,7 @@ func main() {
 						email.From,
 						ctx.IntSlice("ban"),
 						email.Subject,
-						email.Message,
+						email.Messages,
 						email.ContentType,
 					)
 				},

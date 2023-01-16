@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"ksadebiekorf.be/mailing/db"
+	"ksadebiekorf.be/mailing/email_parser"
 	"ksadebiekorf.be/mailing/env"
 	"ksadebiekorf.be/mailing/mail"
 )
@@ -13,8 +14,8 @@ func sendEmail(
 	from,
 	replyTo string,
 	bannen []int,
-	subject,
-	message,
+	subject string,
+	messages []email_parser.SubMessage,
 	contentType string,
 ) error {
 	var err error
@@ -56,7 +57,7 @@ func sendEmail(
 		// From:        mail.ParseEmail(from),
 		// ReplyTo:     mail.ParseEmail(replyTo),
 		Subject: subject,
-		Content: message,
+		Content: messages,
 	}
 	if replyTo != "" {
 		cfg.ReplyTo = mail.ParseEmail(replyTo)

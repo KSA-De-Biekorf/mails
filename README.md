@@ -6,6 +6,16 @@
 go run ./cli
 ```
 
+- Running in a test environment (`TST` or `GTU`):
+```bash
+CLI_ENV=GTU go run ./cli
+```
+
+- Running with log to STDOUT:
+```bash
+LOG_TO_STDOUT=1 go run ./cli
+```
+
 ## Bulding
 
 ```bash

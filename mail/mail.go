@@ -9,6 +9,7 @@ import (
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"ksadebiekorf.be/mailing/db"
+	"ksadebiekorf.be/mailing/email_parser"
 )
 
 type Email = mail.Email
@@ -35,7 +36,7 @@ type MailConfig struct {
 	Subject string
 	// All emails that need to be mailed to
 	Tos     []db.EmailEntry
-	Content string
+	Content []email_parser.SubMessage
 	// text/html or text/plain
 	ContentType string
 }
@@ -66,8 +67,10 @@ func CreateMailRequest(
 	// TODO: SetSubstitution, SetCustomArg
 	// TODO: attachements
 
-	content := mail.NewContent(cfg.ContentType, cfg.Content)
-	m.AddContent(content)
+	for _, content := range cfg.Content {
+		content := mail.NewContent(content.ContentType, content.Message)
+		m.AddContent(content)
+	}
 
 	// mailSettings := mail.NewMailSettings()
 	// mailSettings.SetBypassSpamManagement(mail.NewSetting(true))

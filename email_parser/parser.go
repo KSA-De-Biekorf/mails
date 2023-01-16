@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/mail"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -16,7 +17,7 @@ type Email struct {
 	From        string
 	Subject     string
 	ContentType string
-	Message     string
+	Messages    []SubMessage
 	SpamScore   int
 	IsSpam      bool
 }
@@ -63,11 +64,17 @@ func EmailFromPipe() (*Email, error) {
 	header := msg.Header
 	email.From = header.Get("From")
 	email.Subject = header.Get("Subject")
+
 	contentType := header.Get("Content-Type")
-	if strings.Contains(contentType, "plain") {
-		email.ContentType = "text/plain"
-	} else {
-		email.ContentType = "text/html"
+	contentTypeParts := strings.Split(contentType, ";")
+	contentTypeName := strings.Trim(contentTypeParts[0], " ")
+	email.ContentType = contentTypeName
+	var multipartBoundary *string = nil
+	if strings.Contains(contentTypeName, "multipart") {
+		r := regexp.MustCompile(`boundary=(.*)`)
+		match := r.FindStringSubmatch(contentTypeParts[1])
+		multipartBoundary = &match[1]
+		email.ContentType = contentTypeName
 	}
 
 	spamScoreS := header.Get("X-Spam-Score")
@@ -75,21 +82,81 @@ func EmailFromPipe() (*Email, error) {
 	if err == nil {
 		email.SpamScore = spamScoreInt
 	}
-	email.IsSpam = header.Get("X-Is-Flag") == "YES"
+	email.IsSpam = header.Get("X-Spam-Flag") == "YES"
 
 	// Body
 	body, err := io.ReadAll(msg.Body)
 	if err != nil {
+		log.Printf("Error while reading body")
 		return nil, err
 	}
-	email.Message = parseMessage(string(body))
+	email.Messages, err = parseMessage(string(body), email.ContentType, multipartBoundary)
+	if err != nil {
+		log.Printf("Error in `parseMessage`")
+		return nil, err
+	}
 
 	return &email, nil
 }
 
-// TODO: when sending HTML, remove apple stuff
+// TODO: check if attachements work
 // TODO: substitutions: %to%, ...
-// TODO: attachementsè!!!
-func parseMessage(msg string) string {
-	return msg
+func parseMessage(msg string, mainMessageContentType string, boundary *string) (msgs []SubMessage, err error) {
+	if boundary == nil {
+		// No additional content types need to be returned, because the main content type has already been pased
+		return []SubMessage{{ContentType: mainMessageContentType, Message: msg}}, nil
+	}
+
+	// Parse multipart message
+	boundRegex := regexp.MustCompile(`--` + *boundary)
+
+	started := false
+	var subMessage []string
+	for _, str := range strings.Split(msg, "\n") {
+		if boundRegex.MatchString(str) {
+			if !started {
+				started = true
+				if len(subMessage) != 0 {
+					msgs = append(msgs, SubMessage{ContentType: mainMessageContentType, Message: strings.Join(subMessage, "\n")})
+					subMessage = subMessage[:0]
+				}
+			} else {
+				subMsg, err := parseSubMessage(strings.Join(subMessage, "\n"))
+				if err != nil {
+					return nil, err
+				}
+				subMessage = subMessage[:0] // reset array, but keep the allocated memory
+
+				msgs = append(msgs, *subMsg)
+			}
+		} else {
+			subMessage = append(subMessage, str)
+		}
+	}
+
+	return msgs, nil
+}
+
+type SubMessage struct {
+	ContentType string
+	Message     string
+}
+
+func parseSubMessage(msg string) (*SubMessage, error) {
+	var subMessage SubMessage
+
+	reader := strings.NewReader(msg)
+	parsedMsg, err := mail.ReadMessage(reader)
+	if err != nil {
+		log.Printf("Error in `mail.ReadMessage` (in function `parseSubMessage`). `msg` was %s\n", msg)
+		return nil, err
+	}
+
+	subMessage.ContentType = parsedMsg.Header.Get("Content-Type")
+	msgBytes, err := io.ReadAll(parsedMsg.Body)
+	if err != nil {
+		return nil, err
+	}
+	subMessage.Message = string(msgBytes)
+	return &subMessage, nil
 }
